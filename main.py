@@ -217,9 +217,9 @@ def trigger_ota_update():
                 lcd.move_to(0, 0)
                 lcd.putstr("                ")
                 lcd.move_to(0, 0)
-                lcd.putstr("Select type:")
-                lcd.move_to(0, 8)
-                lcd.putstr("1:L 2:H")
+                lcd.putstr("Enter Type:")
+                lcd.move_to(1, 0)
+                lcd.putstr("Press # to confirm")
                 return
             elif key in '0123456789ABC':  # Password digits
                 password_buffer += key
@@ -412,8 +412,8 @@ def main():
                         lcd.move_to(0, 0)
                         lcd.putstr("                ")
                         lcd.move_to(0, 0)
-                        lcd.putstr("Type confirmed:")
-                        lcd.move_to(0, 15)
+                        lcd.putstr("Type:")
+                        lcd.move_to(0, 5)
                         lcd.putstr(str(selected_type))
                         time.sleep(1)
                     else:
