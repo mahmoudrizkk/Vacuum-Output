@@ -371,7 +371,7 @@ def send_number(weight, cuttingId):
         lcd.move_to(0, 0)
         lcd.putstr(" " * 16)
         lcd.move_to(0, 0)
-        lcd.putstr("Response:" + text[:16])
+        lcd.putstr("R:" + text[:16])
         time.sleep(3)
 
     except Exception as e:
@@ -379,7 +379,7 @@ def send_number(weight, cuttingId):
         lcd.move_to(0, 0)
         lcd.putstr(" " * 16)
         lcd.move_to(0, 0)
-        lcd.putstr("Send failed:" + str(e)[:16])
+        lcd.putstr("failed:" + str(e)[:16])
         time.sleep(2)
 
 def main():
@@ -428,7 +428,7 @@ def main():
                         lcd.putstr("Enter Type:")
                         lcd.move_to(1, 0)
                         lcd.putstr("Press # to confirm")
-                elif key == '*':  # Backspace
+                elif key == 'D':  # Backspace
                     number_buffer = number_buffer[:-1]
                     lcd.move_to(0, 0)
                     lcd.putstr("                ")
@@ -438,6 +438,8 @@ def main():
                     lcd.putstr(number_buffer)
                     lcd.move_to(1, 0)
                     lcd.putstr("Press # to confirm")
+                elif key == '*':
+                    trigger_ota_update()  # 🚀 Trigger OTA when * is pressed
                 elif key in '0123456789':  # Number input
                     number_buffer += key
                     lcd.move_to(0, 0)
@@ -502,7 +504,7 @@ def main():
         lcd.move_to(0, 0)
         lcd.putstr("                ")
         lcd.move_to(0, 0)
-        lcd.putstr("Success!")
+        lcd.putstr("Done!")
         update_wifi_status()
         time.sleep(2)
 
