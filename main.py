@@ -364,7 +364,7 @@ def send_number(weight, cuttingId):
 
         # Send the POST request
         response = requests.get(url)
-        text = response.text
+        text = str(response.get('message',''))
         response.close()
 
         # Clear LCD and display response
