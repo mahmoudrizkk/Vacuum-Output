@@ -249,10 +249,10 @@ def get_last_barcode(selected_type):
 
         response = requests.get(url, timeout=10)
         response_text = response.text
+        response_json = json.loads(response_text)
         response.close()
 
         try:
-            response_json = json.loads(response_text)
             barcode = str(response_json.get('message', ''))
             
             if barcode:
@@ -364,7 +364,8 @@ def send_number(weight, cuttingId):
 
         # Send the POST request
         response = requests.get(url)
-        response_json = json.loads(response)
+        response_text = response.text
+        response_json = json.loads(response_text)
         text = str(response_json.get('message',''))
         response.close()
 
@@ -380,7 +381,7 @@ def send_number(weight, cuttingId):
         lcd.move_to(0, 0)
         lcd.putstr(" " * 16)
         lcd.move_to(0, 0)
-        lcd.putstr("failed:" + str(e)[:16])
+        lcd.putstr("fail" + str(e)[:16])
         time.sleep(2)
 
 def main():
