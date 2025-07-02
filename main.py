@@ -19,6 +19,11 @@ i2c = I2C(0, scl=Pin(5), sda=Pin(4), freq=400000)
 lcd = I2cLcd(i2c, I2C_ADDR, I2C_NUM_ROWS, I2C_NUM_COLS)
 
 # Display welcome message
+#
+#  ----------------
+# |Vacuum Output   |
+# |                |
+#  ----------------
 lcd.move_to(0, 0)
 lcd.putstr("Vacuum Output")
 
@@ -28,14 +33,29 @@ try:
     with open('version.json', 'r') as f:
         version_data = json.load(f)
         version = str(version_data.get('version', 'Unknown'))
+    #
+    #  ----------------
+    # |                |
+    # |Version: <ver>  |
+    #  ----------------
     lcd.move_to(1, 0)
     lcd.putstr(f"Version: {version}")
 except Exception as e:
+    #
+    #  ----------------
+    # |                |
+    # |Version: Unknown|
+    #  ----------------
     lcd.move_to(1, 0)
     lcd.putstr("Version: Unknown")
 
 time.sleep(2)
 # Clear LCD for main operation
+#
+#  ----------------
+# |                |
+# |                |
+#  ----------------
 lcd.move_to(0, 0)
 lcd.putstr("                ")
 lcd.move_to(1, 0)
@@ -86,6 +106,11 @@ def update_wifi_status(force=False):
         wlan.connect(SSID, PASSWORD)
         retries = 10
         while not wlan.isconnected() and retries > 0:
+            #
+            #  ----------------
+            # |                |
+            # |WiFi: Reconnect.|
+            #  ----------------
             lcd.move_to(1, 0)
             lcd.putstr("WiFi: Reconnecting")
             time.sleep(0.5)
@@ -93,6 +118,16 @@ def update_wifi_status(force=False):
 
     status = wlan.isconnected()
     if force or status != last_status:
+        #
+        #  ----------------
+        # |                |
+        # |WiFi: Connected |
+        #  ----------------
+        # or
+        #  ----------------
+        # |                |
+        # |WiFi: Disconn.  |
+        #  ----------------
         lcd.move_to(1, 0)
         lcd.putstr("                ")
         if status:
@@ -153,6 +188,9 @@ def extract_between_plus_and_k(text = "+ k"):
     except ValueError:
         return ''
 
+# firmware_url = "https://github.com/mahmoudrizkk/Vacuum-Output/"
+
+
 def trigger_ota_update():
     """Handle OTA update process with password protection"""
     time.sleep(0.5)
@@ -160,7 +198,9 @@ def trigger_ota_update():
     lcd.putstr("                ")
     lcd.move_to(0, 0)
     lcd.putstr("Enter Password:")
-    lcd.move_to(0, 15)
+    lcd.move_to(1, 0)
+    lcd.putstr("                ")  # Clear the second line
+    lcd.move_to(1, 0)
     lcd.putstr("*")
     
     password_buffer = ""
@@ -178,7 +218,7 @@ def trigger_ota_update():
                     lcd.move_to(0, 0)
                     lcd.putstr("Starting OTA...")
                     try:
-                        firmware_url = "https://github.com/mahmoudrizkk/Vacuum-Output/"
+                        firmware_url = "https://github.com/mahmoudrizkk/Vacuum-Output/"                        
                         ota_updater = OTAUpdater(SSID, PASSWORD, firmware_url, "main.py")
                         ota_updater.download_and_install_update_if_available()
                         lcd.move_to(0, 0)
@@ -206,7 +246,9 @@ def trigger_ota_update():
                     lcd.putstr("                ")
                     lcd.move_to(0, 0)
                     lcd.putstr("Enter Password:")
-                    lcd.move_to(0, 15)
+                    lcd.move_to(1, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(1, 0)
                     lcd.putstr("*")
             elif key == '*':  # Cancel key
                 lcd.move_to(0, 0)
@@ -227,7 +269,9 @@ def trigger_ota_update():
                 lcd.putstr("                ")
                 lcd.move_to(0, 0)
                 lcd.putstr("Enter Password:")
-                lcd.move_to(0, 15)
+                lcd.move_to(1, 0)
+                lcd.putstr("                ")
+                lcd.move_to(1, 0)
                 lcd.putstr("*" * min(len(password_buffer), 1))
             last_key = key
         elif not key:
@@ -241,7 +285,11 @@ def get_last_barcode(selected_type):
     
     try:
         update_wifi_status()
-        
+        #
+        #  ----------------
+        # |                |
+        # |Getting barcode.|
+        #  ----------------
         lcd.move_to(0, 0)
         lcd.putstr("                ")
         lcd.move_to(0, 0)
@@ -256,6 +304,11 @@ def get_last_barcode(selected_type):
             barcode = str(response_json.get('message', ''))
             
             if barcode:
+                #
+                #  ----------------
+                # |Barcode:        |
+                # |<barcode>       |
+                #  ----------------
                 lcd.move_to(0, 0)
                 lcd.putstr("                ")
                 lcd.move_to(0, 0)
@@ -264,32 +317,62 @@ def get_last_barcode(selected_type):
                 lcd.putstr(barcode[:8])
                 
                 time.sleep(3)
+                #
+                #  ----------------
+                # |Barcode received!|
+                # |                |
+                #  ----------------
                 lcd.move_to(0, 0)
                 lcd.putstr("                ")
                 lcd.move_to(0, 0)
                 lcd.putstr("Barcode received!")
             else:
+                #
+                #  ----------------
+                # |No barcode found|
+                # |                |
+                #  ----------------
                 lcd.move_to(0, 0)
                 lcd.putstr("                ")
                 lcd.move_to(0, 0)
                 lcd.putstr("No barcode found")
                 
         except json.JSONDecodeError:
+            #
+            #  ----------------
+            # |JSON Error      |
+            # |                |
+            #  ----------------
             lcd.move_to(0, 0)
             lcd.putstr("                ")
             lcd.move_to(0, 0)
             lcd.putstr("JSON Error")
         except Exception as e:
+            #
+            #  ----------------
+            # |Error           |
+            # |                |
+            #  ----------------
             lcd.move_to(0, 0)
             lcd.putstr("                ")
             lcd.move_to(0, 0)
             lcd.putstr("Error")
 
         time.sleep(2)
+        #
+        #  ----------------
+        # |                |
+        # |                |
+        #  ----------------
         lcd.move_to(0, 0)
         lcd.putstr("                ")
 
     except Exception as e:
+        #
+        #  ----------------
+        # |Get failed:     |
+        # |<err>           |
+        #  ----------------
         lcd.move_to(0, 0)
         lcd.putstr("                ")
         lcd.move_to(0, 0)
@@ -353,12 +436,13 @@ def send_number(weight, cuttingId):
     
     try:
         update_wifi_status()
-        
-        # Clear LCD first line
+        #
+        #  ----------------
+        # |                |
+        # |Sending:<weight>|
+        #  ----------------
         lcd.move_to(0, 0)
         lcd.putstr(" " * 16)
-        
-        # Show sending info
         lcd.move_to(0, 0)
         lcd.putstr(f"Sending:{weight}")
 
@@ -369,7 +453,11 @@ def send_number(weight, cuttingId):
         text = str(response_json.get('message',''))
         response.close()
 
-        # Clear LCD and display response
+        #
+        #  ----------------
+        # |R:<response>    |
+        # |                |
+        #  ----------------
         lcd.move_to(0, 0)
         lcd.putstr(" " * 16)
         lcd.move_to(0, 0)
@@ -377,7 +465,11 @@ def send_number(weight, cuttingId):
         time.sleep(3)
 
     except Exception as e:
-        # Display error message
+        #
+        #  ----------------
+        # |fail<err>       |
+        # |                |
+        #  ----------------
         lcd.move_to(0, 0)
         lcd.putstr(" " * 16)
         lcd.move_to(0, 0)
@@ -389,11 +481,139 @@ def main():
     connect_wifi()
 
     while True:
+        # Step 1: IN/OUT Selection
+        in_out_selection = None
+        last_key = None
+        #
+        #  ----------------
+        # |Select IN/OUT:  |
+        # |1:IN  2:OUT     |
+        #  ----------------
+        lcd.move_to(0, 0)
+        lcd.putstr("                ")
+        lcd.move_to(0, 0)
+        lcd.putstr("Select IN/OUT:")
+        lcd.move_to(1, 0)
+        lcd.putstr("1:IN  2:OUT")
+        while in_out_selection is None:
+            update_wifi_status()
+            key = scan_keypad()
+            if key and key != last_key:
+                if key == '1':
+                    in_out_selection = 'IN'
+                elif key == '2':
+                    in_out_selection = 'OUT'
+                last_key = key
+            elif not key:
+                last_key = None
+            time.sleep_ms(100)
+        #
+        #  ----------------
+        # |Selected: IN    |
+        # |                |
+        #  ----------------
+        # or
+        #  ----------------
+        # |Selected: OUT   |
+        # |                |
+        #  ----------------
+        lcd.move_to(0, 0)
+        lcd.putstr("                ")
+        lcd.move_to(0, 0)
+        lcd.putstr(f"Selected: {in_out_selection}")
+        time.sleep(1)
+
+        # Step 2: Barnika Quantity Input
+        barnika_quantity = ""
+        last_key = None
+        #
+        #  ----------------
+        # |Barnika Qty:    |
+        # |Press # to conf.|
+        #  ----------------
+        lcd.move_to(0, 0)
+        lcd.putstr("                ")
+        lcd.move_to(0, 0)
+        lcd.putstr("Barnika Qty:")
+        lcd.move_to(1, 0)
+        lcd.putstr("Press # to confirm")
+        while True:
+            update_wifi_status()
+            key = scan_keypad()
+            if key and key != last_key:
+                if key == '#':
+                    if barnika_quantity:
+                        break
+                    else:
+                        #
+                        #  ----------------
+                        # |Enter quantity! |
+                        # |                |
+                        #  ----------------
+                        lcd.move_to(0, 0)
+                        lcd.putstr("                ")
+                        lcd.move_to(0, 0)
+                        lcd.putstr("Enter quantity!")
+                        time.sleep(1)
+                        #
+                        #  ----------------
+                        # |Barnika Qty:    |
+                        # |Press # to conf.|
+                        #  ----------------
+                        lcd.move_to(0, 0)
+                        lcd.putstr("Barnika Qty:")
+                        lcd.move_to(1, 0)
+                        lcd.putstr("Press # to confirm")
+                elif key == 'D':  # Backspace
+                    barnika_quantity = barnika_quantity[:-1]
+                    #
+                    #  ----------------
+                    # |Barnika Qty:    |
+                    # |<current input> |
+                    #  ----------------
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Barnika Qty:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr(barnika_quantity[:16])
+                elif key in '0123456789':
+                    barnika_quantity += key
+                    #
+                    #  ----------------
+                    # |Barnika Qty:    |
+                    # |<current input> |
+                    #  ----------------
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Barnika Qty:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr(barnika_quantity[:16])
+                last_key = key
+            elif not key:
+                last_key = None
+            time.sleep_ms(100)
+        #
+        #  ----------------
+        # |Qty: <quantity> |
+        # |                |
+        #  ----------------
+        lcd.move_to(0, 0)
+        lcd.putstr("                ")
+        lcd.move_to(0, 0)
+        lcd.putstr(f"Qty: {barnika_quantity}")
+        time.sleep(1)
+
+        # Step 3: Type Selection
         number_buffer = ""
         selected_type = None
         last_key = None
-
-        # Step 1: Type Selection
+        #
+        #  ----------------
+        # |Enter Type:     |
+        # |Press # to conf.|
+        #  ----------------
         update_wifi_status(force=True)
         lcd.move_to(0, 0)
         lcd.putstr("                ")
@@ -458,7 +678,7 @@ def main():
             
             time.sleep_ms(100)
 
-        # Step 2: Display Selection
+        # Step 4: Display Selection
         lcd.move_to(0, 0)
         lcd.putstr("                ")
         lcd.move_to(0, 0)
@@ -467,17 +687,17 @@ def main():
         lcd.putstr(str(selected_type))
         time.sleep(1)
         
-        # Step 3: Wait for Weight
+        # Step 5: Wait for Weight
         lcd.move_to(0, 0)
         lcd.putstr("                ")
         lcd.move_to(0, 0)
         lcd.putstr("Waiting weight...")
         update_wifi_status()
 
-        # Step 4: Receive Weight from Sensor
+        # Step 6: Receive Weight from Sensor
         received_weight = receive_number()
 
-        # Step 5: Display Weight
+        # Step 7: Display Weight
         lcd.move_to(0, 0)
         lcd.putstr("                ")
         lcd.move_to(0, 0)
@@ -487,7 +707,7 @@ def main():
         update_wifi_status()
         time.sleep(1)
 
-        # Step 6: Send to API
+        # Step 8: Send to API
         try:
             send_number(received_weight, selected_type)
 
@@ -502,7 +722,7 @@ def main():
         update_wifi_status()
         time.sleep(3)
 
-        # Step 8: Success Message and Restart
+        # Step 9: Success Message and Restart
         lcd.move_to(0, 0)
         lcd.putstr("                ")
         lcd.move_to(0, 0)
