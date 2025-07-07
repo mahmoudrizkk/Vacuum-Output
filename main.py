@@ -457,49 +457,45 @@ def trigger_barcode_request():
         
         get_last_barcode(selected_type)
 
-def send_number(weight, cuttingId):
-    # http://shatat-ue.runasp.net/api/Devices/PreCuttingItem?weight=1&cuttingId=1&machineid=1
-    url = f"http://shatat-ue.runasp.net/api/Devices/PreCuttingItem?weight={weight}&cuttingId={cuttingId}&machineid=1"
-    
+def send_pre_cutting_item(status, number_of_parneka, type_id, weight_of_parneka, weight, machine_id=1):
+    url = (
+        "http://shatat-ue.runasp.net/api/Devices/PreCuttingItem"
+        f"?Status={status}"
+        f"&NumberOfParneka={number_of_parneka}"
+        f"&TypeId={type_id}"
+        f"&WeightOfParneka={weight_of_parneka}"
+        f"&Weight={weight}"
+        f"&MachineId={machine_id}"
+    )
     try:
         update_wifi_status()
-        #
-        #  ----------------
-        # |                |
-        # |Sending:<weight>|
-        #  ----------------
         lcd.move_to(0, 0)
         lcd.putstr(" " * 16)
         lcd.move_to(0, 0)
-        lcd.putstr(f"Sending:{weight}")
+        lcd.putstr("Sending data...")
 
-        # Send the POST request
-        response = requests.get(url)
-        response_text = response.text
-        response_json = json.loads(response_text)
-        text = str(response_json.get('message',''))
+        response = requests.post(url, json = {})
+        response_json = response.json()
+        message = str(response_json.get('message', 'No message'))
+        code = response_json.get('code', 0)
         response.close()
 
-        #
-        #  ----------------
-        # |R:<response>    |
-        # |                |
-        #  ----------------
         lcd.move_to(0, 0)
         lcd.putstr(" " * 16)
-        lcd.move_to(0, 0)
-        lcd.putstr("R:" + text[:16])
+        if code == 200:
+            lcd.putstr("Success!")
+        elif code == 400:
+            lcd.putstr("Bad input!")
+        elif code == 404:
+            lcd.putstr("Not found!")
+        else:
+            lcd.putstr("Error!")
+        lcd.move_to(1, 0)
+        lcd.putstr(message[:16])
         time.sleep(3)
-
     except Exception as e:
-        #
-        #  ----------------
-        # |fail<err>       |
-        # |                |
-        #  ----------------
         lcd.move_to(0, 0)
         lcd.putstr(" " * 16)
-        lcd.move_to(0, 0)
         lcd.putstr("fail" + str(e)[:16])
         time.sleep(2)
 
@@ -736,7 +732,7 @@ def main():
 
         # Step 8: Send to API
         try:
-            send_number(received_weight, selected_type)
+            send_pre_cutting_item(in_out_selection, barnika_quantity, selected_type, received_weight, received_weight)
 
         except Exception as e:
             lcd.move_to(0, 0)
