@@ -730,7 +730,7 @@ def main():
 
         # Step 6: Receive Weight from Sensor
         # received_weight = receive_number()
-        received_weight = 1000
+        received_weight = "1000"
 
         # Step 7: Display Weight
         lcd.move_to(0, 0)
