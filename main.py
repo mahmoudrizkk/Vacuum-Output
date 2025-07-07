@@ -534,6 +534,8 @@ def main():
                     lcd.move_to(0, 0)
                     lcd.putstr("Select IN/OUT:")
                     lcd.move_to(1, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(1, 0)
                     lcd.putstr("1:IN  2:OUT")
                     last_key = key
                     continue
@@ -610,6 +612,8 @@ def main():
                     lcd.move_to(0, 0)
                     lcd.putstr("Barnika Qty:")
                     lcd.move_to(1, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(1, 0)
                     lcd.putstr(barnika_quantity[:16])
                 elif key in '0123456789':
                     barnika_quantity += key
@@ -622,6 +626,8 @@ def main():
                     lcd.putstr("                ")
                     lcd.move_to(0, 0)
                     lcd.putstr("Barnika Qty:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("                ")
                     lcd.move_to(1, 0)
                     lcd.putstr(barnika_quantity[:16])
                 last_key = key
@@ -737,7 +743,7 @@ def main():
         lcd.putstr("                ")
         lcd.move_to(0, 0)
         lcd.putstr("Weight:")
-        lcd.move_to(0, 7)
+        lcd.move_to(0, 5)
         lcd.putstr(received_weight[:9])
         update_wifi_status()
         time.sleep(1)
