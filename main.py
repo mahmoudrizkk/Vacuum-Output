@@ -159,6 +159,28 @@ def flush_uart():
     while uart.any():
         uart.read()
 
+# For this data : + 1234 k
+# def receive_number():
+#     """Receive weight data from UART sensor"""
+#     flush_uart()
+#     buffer = b""
+#     while True:
+#         if uart.any():
+#             char = uart.read(1)
+#             if char == b'\r':  # End of transmission
+#                 break
+#             buffer += char
+#         time.sleep_ms(10)
+    
+#     # Parse weight from format "+ 1234 k" to "1234"
+#     whole_weight = buffer.decode().strip()
+#     indexplus = whole_weight.find('+')
+#     indexK = whole_weight.find('k')
+#     weight = whole_weight[indexplus+1:indexK]
+#     weight = weight.replace(' ', '')
+#     return weight
+
+    # For this data : ST,GS,       0.00,kg
 def receive_number():
     """Receive weight data from UART sensor"""
     flush_uart()
@@ -171,13 +193,18 @@ def receive_number():
             buffer += char
         time.sleep_ms(10)
     
-    # Parse weight from format "+ 1234 k" to "1234"
+    # Parse weight from format "ST,GS,       0.00,kg" to extract the number
     whole_weight = buffer.decode().strip()
-    indexplus = whole_weight.find('+')
-    indexK = whole_weight.find('k')
-    weight = whole_weight[indexplus+1:indexK]
-    weight = weight.replace(' ', '')
-    return weight
+    
+    # Split by comma and get the third element (index 2) which contains the weight
+    parts = whole_weight.split(',')
+    if len(parts) >= 3:
+        weight_part = parts[2].strip()  # Remove whitespace
+        # Extract only the numeric part (remove 'kg', '+', ' ' if present)
+        weight = weight_part.replace('kg', '').replace('+', '').replace(' ', '').strip()
+        return weight
+    else:
+        return "0.00"  # Default if parsing fails
 
 def extract_between_plus_and_k(text = "+ k"):
     """Extract value between '+' and 'k' characters"""
