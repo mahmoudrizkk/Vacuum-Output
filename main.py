@@ -526,6 +526,17 @@ def main():
                     in_out_selection = 'IN'
                 elif key == '2':
                     in_out_selection = 'OUT'
+                elif key == '*':
+                    trigger_ota_update()
+                    # After OTA, restart IN/OUT selection prompt
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Select IN/OUT:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("1:IN  2:OUT")
+                    last_key = key
+                    continue
                 last_key = key
             elif not key:
                 last_key = None
