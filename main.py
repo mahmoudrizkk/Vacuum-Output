@@ -743,14 +743,63 @@ def main():
         lcd.putstr("                ")
         lcd.move_to(0, 0)
         lcd.putstr("Weight:")
-        lcd.move_to(0, 5)
+        lcd.move_to(0, 7)
         lcd.putstr(received_weight[:9])
         update_wifi_status()
         time.sleep(1)
 
+        # Step 7.5: Enter Deducted Weight
+        deducted_weight = ""
+        last_key = None
+        lcd.move_to(0, 0)
+        lcd.putstr("                ")
+        lcd.move_to(0, 0)
+        lcd.putstr("Deduct Weight:")
+        lcd.move_to(1, 0)
+        lcd.putstr("Press # to conf.")
+        while True:
+            update_wifi_status()
+            key = scan_keypad()
+            if key and key != last_key:
+                if key == '#':
+                    if deducted_weight:
+                        break
+                    else:
+                        lcd.move_to(0, 0)
+                        lcd.putstr("                ")
+                        lcd.move_to(0, 0)
+                        lcd.putstr("Enter weight!")
+                        time.sleep(1)
+                        lcd.move_to(0, 0)
+                        lcd.putstr("Deduct Weight:")
+                        lcd.move_to(1, 0)
+                        lcd.putstr("Press # to conf.")
+                elif key == 'D':  # Backspace
+                    deducted_weight = deducted_weight[:-1]
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Deduct Weight:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr(deducted_weight[:16])
+                elif key in '0123456789.':
+                    deducted_weight += key
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Deduct Weight:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(1, 0)
+                    lcd.putstr(deducted_weight[:16])
+                last_key = key
+            elif not key:
+                last_key = None
+            time.sleep_ms(100)
+
         # Step 8: Send to API
         try:
-            send_pre_cutting_item(in_out_selection, barnika_quantity, selected_type, received_weight, received_weight)
+            send_pre_cutting_item(in_out_selection, barnika_quantity, selected_type, deducted_weight, received_weight)
 
         except Exception as e:
             lcd.move_to(0, 0)
