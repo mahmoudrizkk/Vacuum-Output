@@ -643,6 +643,8 @@ def main():
         lcd.putstr("                ")
         lcd.move_to(0, 0)
         lcd.putstr(f"Qty: {barnika_quantity}")
+        lcd.move_to(1, 0)
+        lcd.putstr("                ")
         time.sleep(1)
 
         # Step 3: Type Selection
@@ -782,6 +784,17 @@ def main():
                     lcd.putstr("Deduct Weight:")
                     lcd.move_to(1, 0)
                     lcd.putstr(deducted_weight[:16])
+                elif key == '*':  # Decimal point
+                    if '.' not in deducted_weight:
+                        deducted_weight += '.'
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Deduct:")
+                    lcd.move_to(0, 8)
+                    lcd.putstr(deducted_weight)
+                    lcd.move_to(1, 0)
+                    lcd.putstr("Press # to conf")
                 elif key in '0123456789.':
                     deducted_weight += key
                     lcd.move_to(0, 0)
@@ -817,6 +830,8 @@ def main():
         lcd.putstr("                ")
         lcd.move_to(0, 0)
         lcd.putstr("Done!")
+        lcd.move_to(1, 0)
+        lcd.putstr("                ")
         update_wifi_status()
         time.sleep(2)
 
