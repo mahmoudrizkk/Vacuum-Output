@@ -217,7 +217,6 @@ def extract_between_plus_and_k(text = "+ k"):
 
 # firmware_url = "https://github.com/mahmoudrizkk/Vacuum-Output/"
 
-
 def trigger_ota_update():
     """Handle OTA update process with password protection"""
     time.sleep(0.5)
@@ -306,157 +305,6 @@ def trigger_ota_update():
         
         time.sleep_ms(100)
 
-def get_last_barcode(selected_type):
-    """Fetch last barcode from API for selected type (1=Liver, 2=Heart)"""
-    url = f"http://shatat-ue.runasp.net/api/Devices/LastBarcodeForLiverAndHeart?type={selected_type}"
-    
-    try:
-        update_wifi_status()
-        #
-        #  ----------------
-        # |                |
-        # |Getting barcode.|
-        #  ----------------
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Getting barcode...")
-
-        response = requests.get(url, timeout=10)
-        response_text = response.text
-        response_json = json.loads(response_text)
-        response.close()
-
-        try:
-            barcode = str(response_json.get('message', ''))
-            
-            if barcode:
-                #
-                #  ----------------
-                # |Barcode:        |
-                # |<barcode>       |
-                #  ----------------
-                lcd.move_to(0, 0)
-                lcd.putstr("                ")
-                lcd.move_to(0, 0)
-                lcd.putstr("Barcode:")
-                lcd.move_to(0, 8)
-                lcd.putstr(barcode[:8])
-                
-                time.sleep(3)
-                #
-                #  ----------------
-                # |Barcode received!|
-                # |                |
-                #  ----------------
-                lcd.move_to(0, 0)
-                lcd.putstr("                ")
-                lcd.move_to(0, 0)
-                lcd.putstr("Barcode received!")
-            else:
-                #
-                #  ----------------
-                # |No barcode found|
-                # |                |
-                #  ----------------
-                lcd.move_to(0, 0)
-                lcd.putstr("                ")
-                lcd.move_to(0, 0)
-                lcd.putstr("No barcode found")
-                
-        except json.JSONDecodeError:
-            #
-            #  ----------------
-            # |JSON Error      |
-            # |                |
-            #  ----------------
-            lcd.move_to(0, 0)
-            lcd.putstr("                ")
-            lcd.move_to(0, 0)
-            lcd.putstr("JSON Error")
-        except Exception as e:
-            #
-            #  ----------------
-            # |Error           |
-            # |                |
-            #  ----------------
-            lcd.move_to(0, 0)
-            lcd.putstr("                ")
-            lcd.move_to(0, 0)
-            lcd.putstr("Error")
-
-        time.sleep(2)
-        #
-        #  ----------------
-        # |                |
-        # |                |
-        #  ----------------
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-
-    except Exception as e:
-        #
-        #  ----------------
-        # |Get failed:     |
-        # |<err>           |
-        #  ----------------
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Get failed:")
-        lcd.move_to(0, 11)
-        lcd.putstr(str(e)[:5])
-        time.sleep(2)
-
-def trigger_barcode_request():
-    """Handle B button press - request barcode for selected type"""
-    lcd.move_to(0, 0)
-    lcd.putstr("                ")
-    lcd.move_to(0, 0)
-    lcd.putstr("Get Last Barcode")
-    lcd.move_to(1, 0)
-    lcd.putstr("Select: 1:L 2:H")
-    
-    selected_type = None
-    last_key = None
-    
-    while selected_type is None:
-        update_wifi_status()
-        key = scan_keypad()
-        
-        if key and key != last_key:
-            if key == '1':
-                selected_type = 1  # Liver
-            elif key == '2':
-                selected_type = 2  # Heart
-            elif key == '#':  # Cancel
-                lcd.move_to(0, 0)
-                lcd.putstr("                ")
-                lcd.move_to(1, 0)
-                lcd.putstr("                ")
-                lcd.move_to(0, 0)
-                lcd.putstr("Cancelled")
-                time.sleep(2)
-                return
-            last_key = key
-        elif not key:
-            last_key = None
-        
-        time.sleep_ms(100)
-    
-    if selected_type:
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(1, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Type:")
-        lcd.move_to(0, 5)
-        lcd.putstr("Liver" if selected_type == 1 else "Heart")
-        time.sleep(1)
-        
-        get_last_barcode(selected_type)
-
 def send_pre_cutting_item(status, number_of_parneka, type_id, weight_of_parneka, weight, machine_id=1):
     url = (
         "http://shatat-ue.runasp.net/api/Devices/PreCuttingItem"
@@ -512,6 +360,8 @@ def select_in_out_menu():
     lcd.putstr("                ")
     lcd.move_to(0, 0)
     lcd.putstr("Select IN/OUT:")
+    lcd.move_to(1, 0)
+    lcd.putstr("                ")
     lcd.move_to(1, 0)
     lcd.putstr("1:IN  2:OUT")
     while in_out_selection is None:
@@ -739,8 +589,8 @@ def wait_for_weight_menu():
     update_wifi_status()
 
     # Step 6: Receive Weight from Sensor
-    received_weight = receive_number()
-    # received_weight = "1000"
+    # received_weight = receive_number()
+    received_weight = "1000"
 
     # Step 7: Display Weight
     lcd.move_to(0, 0)
