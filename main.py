@@ -693,7 +693,6 @@ def show_success_menu():
 def main():
     """Main application loop"""
     connect_wifi()
-
     while True:
         status = select_in_out_menu()
         barnika_quantity = input_barnika_quantity_menu()
