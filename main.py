@@ -644,11 +644,11 @@ def input_deducted_weight_menu():
                 lcd.move_to(0, 0)
                 lcd.putstr("                ")
                 lcd.move_to(0, 0)
-                lcd.putstr("Deduct:")
-                lcd.move_to(0, 8)
-                lcd.putstr(deducted_weight)
+                lcd.putstr("Deduct Weight:")
                 lcd.move_to(1, 0)
-                lcd.putstr("Press # to conf")
+                lcd.putstr("                ")
+                lcd.move_to(1, 0)
+                lcd.putstr(deducted_weight[:16])
             elif key in '0123456789.':
                 deducted_weight += key
                 lcd.move_to(0, 0)
