@@ -499,341 +499,359 @@ def send_pre_cutting_item(status, number_of_parneka, type_id, weight_of_parneka,
         lcd.putstr("fail" + str(e)[:16])
         time.sleep(2)
 
+def select_in_out_menu():
+    """Handles IN/OUT selection, OTA trigger, returns 'IN' or 'OUT'"""
+    in_out_selection = None
+    last_key = None
+    #
+    #  ----------------
+    # |Select IN/OUT:  |
+    # |1:IN  2:OUT     |
+    #  ----------------
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("Select IN/OUT:")
+    lcd.move_to(1, 0)
+    lcd.putstr("1:IN  2:OUT")
+    while in_out_selection is None:
+        update_wifi_status()
+        key = scan_keypad()
+        if key and key != last_key:
+            if key == '1':
+                in_out_selection = 'IN'
+            elif key == '2':
+                in_out_selection = 'OUT'
+            elif key == '*':
+                trigger_ota_update()
+                # After OTA, restart IN/OUT selection prompt
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Select IN/OUT:")
+                lcd.move_to(1, 0)
+                lcd.putstr("                ")
+                lcd.move_to(1, 0)
+                lcd.putstr("1:IN  2:OUT")
+                last_key = key
+                continue
+            last_key = key
+        elif not key:
+            last_key = None
+        time.sleep_ms(100)
+    #
+    #  ----------------
+    # |Selected: IN    |
+    # |                |
+    #  ----------------
+    # or
+    #  ----------------
+    # |Selected: OUT   |
+    # |                |
+    #  ----------------
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr(f"Selected: {in_out_selection}")
+    time.sleep(1)
+    return in_out_selection
+
+def input_barnika_quantity_menu():
+    """Handles barnika quantity input, returns quantity as string"""
+    barnika_quantity = ""
+    last_key = None
+    #
+    #  ----------------
+    # |Barnika Qty:    |
+    # |Press # to conf.|
+    #  ----------------
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("Barnika Qty:")
+    lcd.move_to(1, 0)
+    lcd.putstr("Press # to confirm")
+    while True:
+        update_wifi_status()
+        key = scan_keypad()
+        if key and key != last_key:
+            if key == '#':
+                if barnika_quantity:
+                    break
+                else:
+                    #
+                    #  ----------------
+                    # |Enter quantity! |
+                    # |                |
+                    #  ----------------
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Enter quantity!")
+                    time.sleep(1)
+                    #
+                    #  ----------------
+                    # |Barnika Qty:    |
+                    # |Press # to conf.|
+                    #  ----------------
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Barnika Qty:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("Press # to confirm")
+            elif key == 'D':  # Backspace
+                barnika_quantity = barnika_quantity[:-1]
+                #
+                #  ----------------
+                # |Barnika Qty:    |
+                # |<current input> |
+                #  ----------------
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Barnika Qty:")
+                lcd.move_to(1, 0)
+                lcd.putstr("                ")
+                lcd.move_to(1, 0)
+                lcd.putstr(barnika_quantity[:16])
+            elif key in '0123456789':
+                barnika_quantity += key
+                #
+                #  ----------------
+                # |Barnika Qty:    |
+                # |<current input> |
+                #  ----------------
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Barnika Qty:")
+                lcd.move_to(1, 0)
+                lcd.putstr("                ")
+                lcd.move_to(1, 0)
+                lcd.putstr(barnika_quantity[:16])
+            last_key = key
+        elif not key:
+            last_key = None
+        time.sleep_ms(100)
+    #
+    #  ----------------
+    # |Qty: <quantity> |
+    # |                |
+    #  ----------------
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr(f"Qty: {barnika_quantity}")
+    lcd.move_to(1, 0)
+    lcd.putstr("                ")
+    time.sleep(1)
+    return barnika_quantity
+
+def select_type_menu():
+    """Handles type selection, OTA trigger, returns type as int"""
+    number_buffer = ""
+    selected_type = None
+    last_key = None
+    #
+    #  ----------------
+    # |Enter Type:     |
+    # |Press # to conf.|
+    #  ----------------
+    update_wifi_status(force=True)
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("Enter Type:")
+    lcd.move_to(1, 0)
+    lcd.putstr("Press # to confirm")
+
+    # Wait for type input and confirmation
+    while selected_type is None:
+        update_wifi_status()
+        key = scan_keypad()
+        
+        if key and key != last_key:
+            if key == '#':  # Enter key to confirm
+                if number_buffer:
+                    selected_type = int(number_buffer)
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Type:")
+                    lcd.move_to(0, 5)
+                    lcd.putstr(str(selected_type))
+                    time.sleep(1)
+                else:
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Enter a number!")
+                    time.sleep(1)
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Enter Type:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("Press # to confirm")
+            elif key == 'D':  # Backspace
+                number_buffer = number_buffer[:-1]
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Type:")
+                lcd.move_to(0, 5)
+                lcd.putstr(number_buffer)
+                lcd.move_to(1, 0)
+                lcd.putstr("Press # to confirm")
+            elif key == '*':
+                trigger_ota_update()  # 🚀 Trigger OTA when * is pressed
+            elif key in '0123456789':  # Number input
+                number_buffer += key
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Type:")
+                lcd.move_to(0, 5)
+                lcd.putstr(number_buffer)
+                lcd.move_to(1, 0)
+                lcd.putstr("Press # to confirm")
+            last_key = key
+        elif not key:
+            last_key = None
+        
+        time.sleep_ms(100)
+
+    # Step 4: Display Selection
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("Selected Type:")
+    lcd.move_to(0, 14)
+    lcd.putstr(str(selected_type))
+    time.sleep(1)
+    return selected_type
+
+def wait_for_weight_menu():
+    """Handles waiting for and receiving weight, returns weight as string"""
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("Waiting weight...")
+    update_wifi_status()
+
+    # Step 6: Receive Weight from Sensor
+    received_weight = receive_number()
+    # received_weight = "1000"
+
+    # Step 7: Display Weight
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("Weight:")
+    lcd.move_to(0, 7)
+    lcd.putstr(received_weight[:9])
+    update_wifi_status()
+    time.sleep(1)
+    return received_weight
+
+def input_deducted_weight_menu():
+    """Handles deducted weight input, returns deducted weight as string"""
+    deducted_weight = ""
+    last_key = None
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("Deduct Weight:")
+    lcd.move_to(1, 0)
+    lcd.putstr("Press # to conf.")
+    while True:
+        update_wifi_status()
+        key = scan_keypad()
+        if key and key != last_key:
+            if key == '#':
+                if deducted_weight:
+                    break
+                else:
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Enter weight!")
+                    time.sleep(1)
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Deduct Weight:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("Press # to conf.")
+            elif key == 'D':  # Backspace
+                deducted_weight = deducted_weight[:-1]
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Deduct Weight:")
+                lcd.move_to(1, 0)
+                lcd.putstr(deducted_weight[:16])
+            elif key == '*':  # Decimal point
+                if '.' not in deducted_weight:
+                    deducted_weight += '.'
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Deduct:")
+                lcd.move_to(0, 8)
+                lcd.putstr(deducted_weight)
+                lcd.move_to(1, 0)
+                lcd.putstr("Press # to conf")
+            elif key in '0123456789.':
+                deducted_weight += key
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Deduct Weight:")
+                lcd.move_to(1, 0)
+                lcd.putstr("                ")
+                lcd.move_to(1, 0)
+                lcd.putstr(deducted_weight[:16])
+            last_key = key
+        elif not key:
+            last_key = None
+        time.sleep_ms(100)
+    update_wifi_status()
+    time.sleep(2)
+    return deducted_weight
+
+def send_to_api_menu(status, barnika_quantity, type_id, deducted_weight, received_weight):
+    """Sends data to API, handles response display"""
+    try:
+        send_pre_cutting_item(status, barnika_quantity, type_id, deducted_weight, received_weight)
+    except Exception as e:
+        lcd.move_to(0, 0)
+        lcd.putstr("                ")
+        lcd.move_to(0, 0)
+        lcd.putstr("Error:")
+        lcd.move_to(0, 6)
+        lcd.putstr(str(e)[:10])
+
+def show_success_menu():
+    """Shows success message"""
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("Done!")
+    lcd.move_to(1, 0)
+    lcd.putstr("                ")
+    update_wifi_status()
+    time.sleep(2)
+
 def main():
     """Main application loop"""
     connect_wifi()
 
     while True:
-        # Step 1: IN/OUT Selection
-        in_out_selection = None
-        last_key = None
-        #
-        #  ----------------
-        # |Select IN/OUT:  |
-        # |1:IN  2:OUT     |
-        #  ----------------
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Select IN/OUT:")
-        lcd.move_to(1, 0)
-        lcd.putstr("1:IN  2:OUT")
-        while in_out_selection is None:
-            update_wifi_status()
-            key = scan_keypad()
-            if key and key != last_key:
-                if key == '1':
-                    in_out_selection = 'IN'
-                elif key == '2':
-                    in_out_selection = 'OUT'
-                elif key == '*':
-                    trigger_ota_update()
-                    # After OTA, restart IN/OUT selection prompt
-                    lcd.move_to(0, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(0, 0)
-                    lcd.putstr("Select IN/OUT:")
-                    lcd.move_to(1, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(1, 0)
-                    lcd.putstr("1:IN  2:OUT")
-                    last_key = key
-                    continue
-                last_key = key
-            elif not key:
-                last_key = None
-            time.sleep_ms(100)
-        #
-        #  ----------------
-        # |Selected: IN    |
-        # |                |
-        #  ----------------
-        # or
-        #  ----------------
-        # |Selected: OUT   |
-        # |                |
-        #  ----------------
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr(f"Selected: {in_out_selection}")
-        time.sleep(1)
-
-        # Step 2: Barnika Quantity Input
-        barnika_quantity = ""
-        last_key = None
-        #
-        #  ----------------
-        # |Barnika Qty:    |
-        # |Press # to conf.|
-        #  ----------------
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Barnika Qty:")
-        lcd.move_to(1, 0)
-        lcd.putstr("Press # to confirm")
-        while True:
-            update_wifi_status()
-            key = scan_keypad()
-            if key and key != last_key:
-                if key == '#':
-                    if barnika_quantity:
-                        break
-                    else:
-                        #
-                        #  ----------------
-                        # |Enter quantity! |
-                        # |                |
-                        #  ----------------
-                        lcd.move_to(0, 0)
-                        lcd.putstr("                ")
-                        lcd.move_to(0, 0)
-                        lcd.putstr("Enter quantity!")
-                        time.sleep(1)
-                        #
-                        #  ----------------
-                        # |Barnika Qty:    |
-                        # |Press # to conf.|
-                        #  ----------------
-                        lcd.move_to(0, 0)
-                        lcd.putstr("Barnika Qty:")
-                        lcd.move_to(1, 0)
-                        lcd.putstr("Press # to confirm")
-                elif key == 'D':  # Backspace
-                    barnika_quantity = barnika_quantity[:-1]
-                    #
-                    #  ----------------
-                    # |Barnika Qty:    |
-                    # |<current input> |
-                    #  ----------------
-                    lcd.move_to(0, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(0, 0)
-                    lcd.putstr("Barnika Qty:")
-                    lcd.move_to(1, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(1, 0)
-                    lcd.putstr(barnika_quantity[:16])
-                elif key in '0123456789':
-                    barnika_quantity += key
-                    #
-                    #  ----------------
-                    # |Barnika Qty:    |
-                    # |<current input> |
-                    #  ----------------
-                    lcd.move_to(0, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(0, 0)
-                    lcd.putstr("Barnika Qty:")
-                    lcd.move_to(1, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(1, 0)
-                    lcd.putstr(barnika_quantity[:16])
-                last_key = key
-            elif not key:
-                last_key = None
-            time.sleep_ms(100)
-        #
-        #  ----------------
-        # |Qty: <quantity> |
-        # |                |
-        #  ----------------
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr(f"Qty: {barnika_quantity}")
-        lcd.move_to(1, 0)
-        lcd.putstr("                ")
-        time.sleep(1)
-
-        # Step 3: Type Selection
-        number_buffer = ""
-        selected_type = None
-        last_key = None
-        #
-        #  ----------------
-        # |Enter Type:     |
-        # |Press # to conf.|
-        #  ----------------
-        update_wifi_status(force=True)
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Enter Type:")
-        lcd.move_to(1, 0)
-        lcd.putstr("Press # to confirm")
-
-        # Wait for type input and confirmation
-        while selected_type is None:
-            update_wifi_status()
-            key = scan_keypad()
-            
-            if key and key != last_key:
-                if key == '#':  # Enter key to confirm
-                    if number_buffer:
-                        selected_type = int(number_buffer)
-                        lcd.move_to(0, 0)
-                        lcd.putstr("                ")
-                        lcd.move_to(0, 0)
-                        lcd.putstr("Type:")
-                        lcd.move_to(0, 5)
-                        lcd.putstr(str(selected_type))
-                        time.sleep(1)
-                    else:
-                        lcd.move_to(0, 0)
-                        lcd.putstr("                ")
-                        lcd.move_to(0, 0)
-                        lcd.putstr("Enter a number!")
-                        time.sleep(1)
-                        lcd.move_to(0, 0)
-                        lcd.putstr("                ")
-                        lcd.move_to(0, 0)
-                        lcd.putstr("Enter Type:")
-                        lcd.move_to(1, 0)
-                        lcd.putstr("Press # to confirm")
-                elif key == 'D':  # Backspace
-                    number_buffer = number_buffer[:-1]
-                    lcd.move_to(0, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(0, 0)
-                    lcd.putstr("Type:")
-                    lcd.move_to(0, 5)
-                    lcd.putstr(number_buffer)
-                    lcd.move_to(1, 0)
-                    lcd.putstr("Press # to confirm")
-                elif key == '*':
-                    trigger_ota_update()  # 🚀 Trigger OTA when * is pressed
-                elif key in '0123456789':  # Number input
-                    number_buffer += key
-                    lcd.move_to(0, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(0, 0)
-                    lcd.putstr("Type:")
-                    lcd.move_to(0, 5)
-                    lcd.putstr(number_buffer)
-                    lcd.move_to(1, 0)
-                    lcd.putstr("Press # to confirm")
-                last_key = key
-            elif not key:
-                last_key = None
-            
-            time.sleep_ms(100)
-
-        # Step 4: Display Selection
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Selected Type:")
-        lcd.move_to(0, 14)
-        lcd.putstr(str(selected_type))
-        time.sleep(1)
-        
-        # Step 5: Wait for Weight
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Waiting weight...")
-        update_wifi_status()
-
-        # Step 6: Receive Weight from Sensor
-        received_weight = receive_number()
-        # received_weight = "1000"
-
-        # Step 7: Display Weight
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Weight:")
-        lcd.move_to(0, 7)
-        lcd.putstr(received_weight[:9])
-        update_wifi_status()
-        time.sleep(1)
-
-        # Step 7.5: Enter Deducted Weight
-        deducted_weight = ""
-        last_key = None
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Deduct Weight:")
-        lcd.move_to(1, 0)
-        lcd.putstr("Press # to conf.")
-        while True:
-            update_wifi_status()
-            key = scan_keypad()
-            if key and key != last_key:
-                if key == '#':
-                    if deducted_weight:
-                        break
-                    else:
-                        lcd.move_to(0, 0)
-                        lcd.putstr("                ")
-                        lcd.move_to(0, 0)
-                        lcd.putstr("Enter weight!")
-                        time.sleep(1)
-                        lcd.move_to(0, 0)
-                        lcd.putstr("Deduct Weight:")
-                        lcd.move_to(1, 0)
-                        lcd.putstr("Press # to conf.")
-                elif key == 'D':  # Backspace
-                    deducted_weight = deducted_weight[:-1]
-                    lcd.move_to(0, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(0, 0)
-                    lcd.putstr("Deduct Weight:")
-                    lcd.move_to(1, 0)
-                    lcd.putstr(deducted_weight[:16])
-                elif key == '*':  # Decimal point
-                    if '.' not in deducted_weight:
-                        deducted_weight += '.'
-                    lcd.move_to(0, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(0, 0)
-                    lcd.putstr("Deduct:")
-                    lcd.move_to(0, 8)
-                    lcd.putstr(deducted_weight)
-                    lcd.move_to(1, 0)
-                    lcd.putstr("Press # to conf")
-                elif key in '0123456789.':
-                    deducted_weight += key
-                    lcd.move_to(0, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(0, 0)
-                    lcd.putstr("Deduct Weight:")
-                    lcd.move_to(1, 0)
-                    lcd.putstr("                ")
-                    lcd.move_to(1, 0)
-                    lcd.putstr(deducted_weight[:16])
-                last_key = key
-            elif not key:
-                last_key = None
-            time.sleep_ms(100)
-
-        # Step 8: Send to API
-        try:
-            send_pre_cutting_item(in_out_selection, barnika_quantity, selected_type, deducted_weight, received_weight)
-
-        except Exception as e:
-            lcd.move_to(0, 0)
-            lcd.putstr("                ")
-            lcd.move_to(0, 0)
-            lcd.putstr("Error:")
-            lcd.move_to(0, 6)
-            lcd.putstr(str(e)[:10])
-
-        update_wifi_status()
-        time.sleep(3)
-
-        # Step 9: Success Message and Restart
-        lcd.move_to(0, 0)
-        lcd.putstr("                ")
-        lcd.move_to(0, 0)
-        lcd.putstr("Done!")
-        lcd.move_to(1, 0)
-        lcd.putstr("                ")
-        update_wifi_status()
-        time.sleep(2)
+        status = select_in_out_menu()
+        barnika_quantity = input_barnika_quantity_menu()
+        type_id = select_type_menu()
+        received_weight = wait_for_weight_menu()
+        deducted_weight = input_deducted_weight_menu()
+        send_to_api_menu(status, barnika_quantity, type_id, deducted_weight, received_weight)
+        show_success_menu()
 
 def main2():
     """Alternative main function for testing UART only"""
