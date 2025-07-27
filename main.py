@@ -305,7 +305,8 @@ def trigger_ota_update():
         
         time.sleep_ms(100)
 
-def send_pre_cutting_item(status, number_of_parneka, type_id, weight_of_parneka, weight, machine_id=1):
+def send_pre_cutting_item(status, number_of_parneka, type_id, weight_of_parneka, weight, orderIndex, machine_id=1):
+    # Devices/PreCuttingItem?Status=1&NumberOfParneka=1&TypeId=1&WeightOfParneka=15&Weight=20&orderIndex=1&MachineId=1
     url = (
         "http://shatat-ue.runasp.net/api/Devices/PreCuttingItem"
         f"?Status={status}"
@@ -313,6 +314,7 @@ def send_pre_cutting_item(status, number_of_parneka, type_id, weight_of_parneka,
         f"&TypeId={type_id}"
         f"&WeightOfParneka={weight_of_parneka}"
         f"&Weight={weight}"
+        f"&orderIndex={orderIndex}"
         f"&MachineId={machine_id}"
     )
     try:
@@ -667,10 +669,10 @@ def input_deducted_weight_menu():
     time.sleep(2)
     return deducted_weight
 
-def send_to_api_menu(status, barnika_quantity, type_id, deducted_weight, received_weight):
+def send_to_api_menu(status, barnika_quantity, type_id, deducted_weight, received_weight, orderIndex):
     """Sends data to API, handles response display"""
     try:
-        send_pre_cutting_item(status, barnika_quantity, type_id, deducted_weight, received_weight)
+        send_pre_cutting_item(status, barnika_quantity, type_id, deducted_weight, received_weight, orderIndex)
     except Exception as e:
         lcd.move_to(0, 0)
         lcd.putstr("                ")
@@ -690,16 +692,94 @@ def show_success_menu():
     update_wifi_status()
     time.sleep(2)
 
+def select_order_number():
+    """Get order number from user input"""
+    order_buffer = ""
+    last_key = None
+
+    update_wifi_status(force=True)
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("Enter Order No:")
+    lcd.move_to(1, 0)
+    lcd.putstr("Press # to confirm")
+
+    while True:
+        update_wifi_status()
+        key = scan_keypad()
+        if key and key != last_key:
+            if key == '#':  # Confirm order number
+                if order_buffer:
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Order Confirmed:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("No: " + order_buffer[:12])
+                    time.sleep(1)
+                    return order_buffer
+                else:
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Enter a number!")
+                    time.sleep(1)
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Enter Order No:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("Press # to confirm")
+            elif key == 'D':  # Backspace
+                order_buffer = order_buffer[:-1]
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Order No:")
+                lcd.move_to(0, 9)
+                lcd.putstr(order_buffer)
+                lcd.move_to(1, 0)
+                lcd.putstr("Press # to confirm")
+            elif key == '*':  # OTA Update trigger
+                trigger_ota_update()
+                # After OTA, restart order number input
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Enter Order No:")
+                lcd.move_to(1, 0)
+                lcd.putstr("Press # to confirm")
+                last_key = key
+                continue
+            elif key in '0123456789':  # Number input
+                order_buffer += key
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("Order No:")
+                lcd.move_to(0, 9)
+                lcd.putstr(order_buffer)
+                lcd.move_to(1, 0)
+                lcd.putstr("Press # to confirm")
+            last_key = key
+        elif not key:
+            last_key = None
+        time.sleep_ms(100)
+
 def main():
     """Main application loop"""
     connect_wifi()
+
+    orderIndex = select_order_number()
+
     while True:
         status = select_in_out_menu()
         barnika_quantity = input_barnika_quantity_menu()
         type_id = select_type_menu()
         received_weight = wait_for_weight_menu()
         deducted_weight = input_deducted_weight_menu()
-        send_to_api_menu(status, barnika_quantity, type_id, deducted_weight, received_weight)
+        send_to_api_menu(status, barnika_quantity, type_id, deducted_weight, received_weight, orderIndex)
         show_success_menu()
 
 def main2():
