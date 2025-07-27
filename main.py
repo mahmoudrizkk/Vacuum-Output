@@ -901,8 +901,8 @@ def main():
         received_weight = wait_for_weight_menu()
         # Show weight difference and get confirmation
         final_weight = show_weight_difference_menu(received_weight, deducted_weight)
-        # status = select_in_out_menu()
-        status = select_status_menu()
+        status = select_in_out_menu()
+        # status = select_status_menu()
         # barnika_quantity = input_barnika_quantity_menu()
         send_to_api_menu(status, "1", type_id, deducted_weight, received_weight, orderIndex)
         show_success_menu()
