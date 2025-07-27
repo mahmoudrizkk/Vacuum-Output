@@ -584,6 +584,56 @@ def select_type_menu():
     time.sleep(1)
     return selected_type
 
+def select_status_menu():
+    """Handles piece status selection, returns status as int (1=E, 2=S, 3=G)"""
+    piece_status = None
+    last_key = None
+    
+    lcd.move_to(0, 0)
+    lcd.putstr("                ")
+    lcd.move_to(0, 0)
+    lcd.putstr("1:E 2:S 3:G")
+    lcd.move_to(1, 0)
+    lcd.putstr("                ")
+    lcd.move_to(1, 0)
+    lcd.putstr("Select status:")
+    
+    while piece_status is None:
+        update_wifi_status()
+        key = scan_keypad()
+        if key and key != last_key:
+            if key in ['1', '2', '3']:
+                piece_status = int(key)
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                if piece_status == 1:
+                    lcd.putstr("E3dam sel.")
+                elif piece_status == 2:
+                    lcd.putstr("Esteb3ad sel.")
+                elif piece_status == 3:
+                    lcd.putstr("Good sel.")
+                lcd.move_to(1, 0)
+                lcd.putstr("                ")
+                time.sleep(1)
+            elif key == '*':  # OTA Update trigger
+                trigger_ota_update()
+                # After OTA, restart status selection
+                lcd.move_to(0, 0)
+                lcd.putstr("                ")
+                lcd.move_to(0, 0)
+                lcd.putstr("1:E 2:S 3:G")
+                lcd.move_to(1, 0)
+                lcd.putstr("Select status:")
+                last_key = key
+                continue
+            last_key = key
+        elif not key:
+            last_key = None
+        time.sleep_ms(100)
+    
+    return piece_status
+
 def wait_for_weight_menu():
     """Handles waiting for and receiving weight, returns weight as string"""
     lcd.move_to(0, 0)
@@ -672,6 +722,70 @@ def input_deducted_weight_menu():
     update_wifi_status()
     time.sleep(2)
     return deducted_weight
+
+def show_weight_difference_menu(received_weight, deducted_weight):
+    """Shows the difference between received and deducted weight, waits for confirmation"""
+    try:
+        # Convert to float for calculation
+        received = float(received_weight)
+        deducted = float(deducted_weight)
+        difference = received - deducted
+        
+        # Format difference to 2 decimal places
+        difference_str = f"{difference:.2f}"
+        
+        lcd.move_to(0, 0)
+        lcd.putstr("                ")
+        lcd.move_to(0, 0)
+        lcd.putstr("Difference:")
+        lcd.move_to(1, 0)
+        lcd.putstr("                ")
+        lcd.move_to(1, 0)
+        lcd.putstr(difference_str[:16])
+        
+        # Wait for user confirmation
+        last_key = None
+        while True:
+            update_wifi_status()
+            key = scan_keypad()
+            if key and key != last_key:
+                if key == '#':  # Confirm
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Confirmed!")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("                ")
+                    time.sleep(1)
+                    return difference_str
+                elif key == '*':  # OTA Update trigger
+                    trigger_ota_update()
+                    # After OTA, restart difference display
+                    lcd.move_to(0, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(0, 0)
+                    lcd.putstr("Difference:")
+                    lcd.move_to(1, 0)
+                    lcd.putstr("                ")
+                    lcd.move_to(1, 0)
+                    lcd.putstr(difference_str[:16])
+                    last_key = key
+                    continue
+                last_key = key
+            elif not key:
+                last_key = None
+            time.sleep_ms(100)
+            
+    except ValueError:
+        # Handle invalid number conversion
+        lcd.move_to(0, 0)
+        lcd.putstr("                ")
+        lcd.move_to(0, 0)
+        lcd.putstr("Invalid weight!")
+        lcd.move_to(1, 0)
+        lcd.putstr("                ")
+        time.sleep(2)
+        return "0.00"
 
 def send_to_api_menu(status, barnika_quantity, type_id, deducted_weight, received_weight, orderIndex):
     """Sends data to API, handles response display"""
@@ -782,12 +896,15 @@ def main():
     orderIndex = select_order_number()
 
     while True:
-        status = select_in_out_menu()
-        barnika_quantity = input_barnika_quantity_menu()
         type_id = select_type_menu()
-        received_weight = wait_for_weight_menu()
         deducted_weight = input_deducted_weight_menu()
-        send_to_api_menu(status, barnika_quantity, type_id, deducted_weight, received_weight, orderIndex)
+        received_weight = wait_for_weight_menu()
+        # Show weight difference and get confirmation
+        final_weight = show_weight_difference_menu(received_weight, deducted_weight)
+        # status = select_in_out_menu()
+        status = select_status_menu()
+        # barnika_quantity = input_barnika_quantity_menu()
+        send_to_api_menu(status, "1", type_id, deducted_weight, received_weight, orderIndex)
         show_success_menu()
 
 def main2():
