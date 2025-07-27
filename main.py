@@ -112,7 +112,7 @@ def update_wifi_status(force=False):
             # |WiFi: Reconnect.|
             #  ----------------
             lcd.move_to(1, 0)
-            lcd.putstr("WiFi: Reconnecting")
+            lcd.putstr("WiFi: Reconnect.")
             time.sleep(0.5)
             retries -= 1
 
@@ -405,6 +405,8 @@ def select_in_out_menu():
     lcd.putstr("                ")
     lcd.move_to(0, 0)
     lcd.putstr(f"Selected: {in_out_selection}")
+    lcd.move_to(1, 0)
+    lcd.putstr("                ")
     time.sleep(1)
     return in_out_selection
 
@@ -587,7 +589,7 @@ def wait_for_weight_menu():
     lcd.move_to(0, 0)
     lcd.putstr("                ")
     lcd.move_to(0, 0)
-    lcd.putstr("Waiting weight...")
+    lcd.putstr("Waiting weight..")
     update_wifi_status()
 
     # Step 6: Receive Weight from Sensor
@@ -599,8 +601,10 @@ def wait_for_weight_menu():
     lcd.putstr("                ")
     lcd.move_to(0, 0)
     lcd.putstr("Weight:")
-    lcd.move_to(0, 7)
-    lcd.putstr(received_weight[:9])
+    lcd.move_to(1, 0)
+    lcd.putstr("                ")
+    lcd.move_to(1, 0)
+    lcd.putstr(received_weight[:16])
     update_wifi_status()
     time.sleep(1)
     return received_weight
@@ -737,8 +741,12 @@ def select_order_number():
                 lcd.putstr("                ")
                 lcd.move_to(0, 0)
                 lcd.putstr("Order No:")
-                lcd.move_to(0, 9)
-                lcd.putstr(order_buffer)
+                lcd.move_to(1, 0)
+                lcd.putstr("                ")
+                lcd.move_to(1, 0)
+                lcd.putstr(order_buffer[:16])
+                lcd.move_to(0, 0)
+                lcd.putstr("Order No:")
                 lcd.move_to(1, 0)
                 lcd.putstr("Press # to confirm")
             elif key == '*':  # OTA Update trigger
