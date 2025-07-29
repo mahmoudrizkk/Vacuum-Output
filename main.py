@@ -180,7 +180,7 @@ def flush_uart():
 #     weight = weight.replace(' ', '')
 #     return weight
 
-    # For this data : ST,GS,       0.00,kg
+# For this data : ST,GS,       0.00,kg
 def receive_number():
     """Receive weight data from UART sensor"""
     flush_uart()
@@ -356,7 +356,7 @@ def select_in_out_menu():
     #
     #  ----------------
     # |Select IN/OUT:  |
-    # |1:IN  2:OUT     |
+    # |1:IN 2:OUT 3:Vac|
     #  ----------------
     lcd.move_to(0, 0)
     lcd.putstr("                ")
