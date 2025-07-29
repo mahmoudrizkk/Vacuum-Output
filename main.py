@@ -363,9 +363,7 @@ def select_in_out_menu():
     lcd.move_to(0, 0)
     lcd.putstr("Select IN/OUT:")
     lcd.move_to(1, 0)
-    lcd.putstr("                ")
-    lcd.move_to(1, 0)
-    lcd.putstr("1:IN  2:OUT")
+    lcd.putstr("1:IN 2:OUT 3:Vac")
     while in_out_selection is None:
         update_wifi_status()
         key = scan_keypad()
@@ -374,6 +372,8 @@ def select_in_out_menu():
                 in_out_selection = 'IN'
             elif key == '2':
                 in_out_selection = 'OUT'
+            elif key == '3':
+                in_out_selection = 'Vacuum'
             elif key == '*':
                 trigger_ota_update()
                 # After OTA, restart IN/OUT selection prompt
@@ -382,9 +382,7 @@ def select_in_out_menu():
                 lcd.move_to(0, 0)
                 lcd.putstr("Select IN/OUT:")
                 lcd.move_to(1, 0)
-                lcd.putstr("                ")
-                lcd.move_to(1, 0)
-                lcd.putstr("1:IN  2:OUT")
+                lcd.putstr("1:IN 2:OUT 3:Vac")
                 last_key = key
                 continue
             last_key = key
@@ -904,7 +902,11 @@ def main():
         status = select_in_out_menu()
         # status = select_status_menu()
         # barnika_quantity = input_barnika_quantity_menu()
-        send_to_api_menu(status, "1", type_id, deducted_weight, received_weight, orderIndex)
+        if status == 'Vacuum':
+            send_to_api_menu('IN', "1", type_id, deducted_weight, received_weight, orderIndex)
+            send_to_api_menu('OUT', "1", type_id, deducted_weight, received_weight, orderIndex)
+        else:
+            send_to_api_menu(status, "1", type_id, deducted_weight, received_weight, orderIndex)
         show_success_menu()
 
 def main2():
