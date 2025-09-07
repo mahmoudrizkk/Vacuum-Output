@@ -556,8 +556,6 @@ def select_type_menu():
                 lcd.putstr("Press # to confirm")
             elif key == '*':
                 trigger_ota_update()  # 🚀 Trigger OTA when * is pressed
-            elif key == 'C':  # Go back to order number selection
-                return None
             elif key in '0123456789':  # Number input
                 number_buffer += key
                 lcd.move_to(0, 0)
@@ -897,7 +895,7 @@ def main():
 
     while True:
         type_id = select_type_menu()
-        if type_id is None:
+        if type_id is "0":
             orderIndex = select_order_number()
             continue
         deducted_weight = input_deducted_weight_menu()
