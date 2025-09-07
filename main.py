@@ -514,9 +514,7 @@ def select_type_menu():
     lcd.move_to(0, 0)
     lcd.putstr("Enter Type:")
     lcd.move_to(1, 0)
-    lcd.putstr("Press # to confirm")
-
-    # Wait for type input and confirmation
+    lcd.putstr("Press # to conf. 0:Back") # Updated instruction for '0' key
     while selected_type is None:
         update_wifi_status()
         key = scan_keypad()
@@ -525,6 +523,8 @@ def select_type_menu():
             if key == '#':  # Enter key to confirm
                 if number_buffer:
                     selected_type = int(number_buffer)
+                    if selected_type == 0:  # If 0 is selected, return to order selection
+                        return None
                     lcd.move_to(0, 0)
                     lcd.putstr("                ")
                     lcd.move_to(0, 0)
@@ -565,7 +565,7 @@ def select_type_menu():
                 lcd.move_to(0, 5)
                 lcd.putstr(number_buffer)
                 lcd.move_to(1, 0)
-                lcd.putstr("Press # to confirm C:Back") # Updated instruction for 'C' key
+                lcd.putstr("Press # to confirm")
             last_key = key
         elif not key:
             last_key = None
@@ -895,7 +895,7 @@ def main():
 
     while True:
         type_id = select_type_menu()
-        if type_id is "0":
+        if type_id is None:
             orderIndex = select_order_number()
             continue
         deducted_weight = input_deducted_weight_menu()
